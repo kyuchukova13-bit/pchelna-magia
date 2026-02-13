@@ -130,7 +130,7 @@
         initLevel();
     }
 
-    function initLevel() {
+   function initLevel() {
         const gar = document.getElementById('garden'); gar.innerHTML = "";
         step = 0; lives = 3;
         document.getElementById('hearts').innerText = "❤️❤️❤️";
@@ -147,13 +147,37 @@
         }
         fls.sort(() => Math.random() - 0.5);
 
+        // ДЕФИНИРАНЕ НА ПЕРСПЕКТИВА (отзад напред)
+        // Ред 0 е най-далеч (най-малък), Ред 2 е най-близо (най-голям)
+        const rowSettings = [
+            { scale: 0.8, zIndex: 100, top: 380 }, // Заден ред
+            { scale: 1.0, zIndex: 200, top: 440 }, // Среден ред
+            { scale: 1.3, zIndex: 300, top: 510 }  // Преден ред (Най-големи цветя)
+        ];
+
         fls.forEach((d, i) => {
-            const row = i % 3, col = Math.floor(i / 3);
+            const row = i % 3; 
+            const col = Math.floor(i / 3);
+            const settings = rowSettings[row];
+            
             const div = document.createElement('div');
             div.className = "flower";
-            div.style.left = (80 + col * 145 + (row * 35)) + "px";
-            div.style.top = (390 + row * 85) + "px"; 
-            div.innerHTML = `<img src="${(i % 3) + 1}.png" style="width:100%"><div class="f-num">${d.v}</div>`;
+            
+            // Динамичен размер според реда
+            const size = 130 * settings.scale;
+            div.style.width = size + "px";
+            div.style.height = (size * 1.15) + "px";
+            
+            div.style.left = (50 + col * 155 + (row * 40)) + "px";
+            div.style.top = settings.top + "px"; 
+            div.style.zIndex = settings.zIndex;
+
+            div.innerHTML = `
+                <img src="${row + 1}.png" style="width:100%; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));">
+                <div class="f-num" style="width: ${44 * settings.scale}px; height: ${44 * settings.scale}px; font-size: ${24 * settings.scale}px;">
+                    ${d.v}
+                </div>`;
+                
             div.onclick = () => {
                 if(d.v === tasks[step].a) fly(div);
                 else {
@@ -163,7 +187,9 @@
             };
             gar.appendChild(div);
         });
-        document.getElementById('bee').style.left = '40px'; document.getElementById('bee').style.top = '510px';
+        document.getElementById('bee').style.left = '40px'; 
+        document.getElementById('bee').style.top = '510px';
+        document.getElementById('bee').style.zIndex = "4000";
     }
 
     function fly(target) {
