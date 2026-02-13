@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Пчелна Магия</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #FFD700; --orange: #FF9800; --shadow: #B86500; --text: #E65100; }
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; font-family: 'Fredoka', sans-serif; overflow: hidden; }
+        
+        #viewport {
+            position: relative; width: 1000px; height: 667px;
+            background: url('13.png') no-repeat center center; background-size: cover;
+            border-radius: 40px; overflow: hidden; box-shadow: 0 0 100px rgba(0,0,0,0.9);
+        }
+
+        /* НАЧАЛЕН ЕКРАН */
+        .overlay {
+            position: absolute; inset: 0; z-index: 5000;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+        }
+
+        .main-panel {
+            background: #FFFFFF; width: 880px; height: 580px;
+            border-radius: 60px; border: 12px solid var(--gold);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4); text-align: center;
+        }
+
+        .title-group { display: flex; align-items: center; gap: 20px; margin-top: -10px; }
+        .title-group h1 { font-size: 85px; color: var(--text); margin: 0; }
+        .author { font-size: 24px; color: #333; border-bottom: 3px solid var(--gold); margin-bottom: 35px; padding-bottom: 5px; }
+
+        /* ПИТА - ПОДРЕДБА ПО СНИМКАТА */
+        .honey-grid { position: relative; width: 560px; height: 210px; margin-bottom: 25px; }
+        .hex {
+            position: absolute; width: 95px; height: 110px; background: var(--orange);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 42px; color: white; cursor: pointer; border: none;
+            transition: 0.1s; filter: drop-shadow(0 8px 0 var(--shadow));
+        }
+        /* Разминаване: Ред 2 влиза в пазви на Ред 1 */
+        .hex:nth-child(1) { left: 40px;  top: 0; }
+        .hex:nth-child(2) { left: 140px; top: 0; }
+        .hex:nth-child(3) { left: 240px; top: 0; }
+        .hex:nth-child(4) { left: 340px; top: 0; }
+        .hex:nth-child(5) { left: 440px; top: 0; }
+        .hex:nth-child(6) { left: 90px;  top: 85px; }
+        .hex:nth-child(7) { left: 190px; top: 85px; }
+        .hex:nth-child(8) { left: 290px; top: 85px; }
+        .hex:nth-child(9) { left: 390px; top: 85px; }
+        .hex:nth-child(10){ left: 490px; top: 85px; }
+
+        .hex:hover { background: var(--gold); color: var(--text); transform: translateY(-5px); }
+
+        .instr-1 { font-size: 24px; color: #444; margin-bottom: 5px; }
+        .instr-2 { font-size: 22px; color: #666; margin-top: 0; }
+
+        /* UI ИГРА */
+        #ui-top { position: absolute; top: 25px; width: 100%; display: none; justify-content: space-between; align-items: center; padding: 0 50px; box-sizing: border-box; z-index: 2000; }
+        #task-box { background: white; padding: 10px 70px; border-radius: 100px; font-size: 60px; border: 6px solid var(--gold); }
+        #hearts { font-size: 50px; }
+        #jar { width: 85px; height: 110px; background: rgba(255,255,255,0.3); border: 4px solid #fff; border-radius: 10px 10px 45px 45px; position: relative; overflow: hidden; }
+        #honey-fill { position: absolute; bottom: 0; width: 100%; height: 0%; background: linear-gradient(to top, #FF8F00, #FFD54F); transition: 0.8s; }
+
+        /* ПЧЕЛА И ЦВЕТЯ */
+        #bee { position: absolute; width: 140px; z-index: 4000; transition: all 1.4s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+        .flower { position: absolute; width: 130px; height: 150px; cursor: pointer; z-index: 100; }
+        .f-num { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border: 3px solid var(--gold); }
+        
+        .correct { filter: brightness(1.2); }
+        .correct .f-num { background: var(--gold); border-color: var(--text); color: var(--text); box-shadow: 0 0 15px var(--gold); }
+
+        /* ЦЕНТРАЛЕН ДОКЛАД */
+        #report-overlay { position: absolute; inset: 0; z-index: 7000; display: none; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <div id="start-screen" class="overlay">
+        <div class="main-panel">
+            <div class="title-group">
+                <img src="4.png" style="width: 80px; transform: scaleX(1);">
+                <h1>Пчелна Магия</h1>
+            </div>
+            <div class="author">Автор: Дочка Кючукова</div>
+            <div class="honey-grid" id="menu"></div>
+            <p class="instr-1">Помогни на пчеличката да събере прашец!
+<p class="instr-2"> Избери  таблица.</p>
+            <p class="instr-3">Кликни върху правилните цветя, но пази сърцата си. Внимавай – отровните цветя отнемат живот!</p>
+        </div>
+    </div>
+
+    <div id="report-overlay">
+        <div class="main-panel" style="height: auto; padding: 50px; width: 600px;">
+            <h2 id="rep-title" style="font-size: 60px; color: var(--text); margin:0;"></h2>
+            <p id="rep-body" style="font-size: 26px; color: #444; margin: 25px 0;"></p>
+            <button onclick="location.reload()" style="background:var(--orange); color:white; border:none; padding:15px 50px; font-size:25px; border-radius:40px; cursor:pointer;">НОВА ИГРА</button>
+        </div>
+    </div>
+
+    <div id="ui-top">
+        <div id="hearts">❤️❤️❤️</div>
+        <div id="task-box"></div>
+        <div id="jar"><div id="honey-fill"></div></div>
+    </div>
+    
+    <img id="bee" src="4.png" style="left: -200px; top: 500px;">
+    <div id="garden"></div>
+</div>
+
+<script>
+    let mult = 1, step = 0, lives = 3, tasks = [], lastX = 50;
+    const buzz = new Audio("https://www.soundjay.com/nature/bee-buzz-1.mp3");
+
+    const menu = document.getElementById('menu');
+    for(let i=1; i<=10; i++) {
+        let b = document.createElement('button');
+        b.className = 'hex'; b.innerText = i;
+        b.onclick = () => { mult = i; start(); };
+        menu.appendChild(b);
+    }
+
+    function start() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('ui-top').style.display = 'flex';
+        initLevel();
+    }
+
+    function initLevel() {
+        const gar = document.getElementById('garden'); gar.innerHTML = "";
+        step = 0; lives = 3;
+        document.getElementById('hearts').innerText = "❤️❤️❤️";
+        document.getElementById('honey-fill').style.height = "0%";
+
+        let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].sort(() => Math.random() - 0.5);
+        tasks = nums.map(n => ({ q: `${mult} x ${n}`, a: n * mult }));
+        updateTask();
+
+        let fls = nums.map(n => ({ v: n * mult }));
+        while(fls.length < 18) {
+            let r = Math.floor(Math.random() * (mult * 10 + 10)) + 1;
+            if(r % mult !== 0) fls.push({ v: r });
+        }
+        fls.sort(() => Math.random() - 0.5);
+
+        fls.forEach((d, i) => {
+            const row = i % 3, col = Math.floor(i / 3);
+            const div = document.createElement('div');
+            div.className = "flower";
+            div.style.left = (80 + col * 145 + (row * 35)) + "px";
+            div.style.top = (390 + row * 85) + "px"; 
+            div.innerHTML = `<img src="${(i % 3) + 1}.png" style="width:100%"><div class="f-num">${d.v}</div>`;
+            div.onclick = () => {
+                if(d.v === tasks[step].a) fly(div);
+                else {
+                    lives--; document.getElementById('hearts').innerText = "❤️".repeat(lives);
+                    if(lives <= 0) showReport("ОПИТАЙ ПАК!", "Пчеличката се умори...");
+                }
+            };
+            gar.appendChild(div);
+        });
+        document.getElementById('bee').style.left = '40px'; document.getElementById('bee').style.top = '510px';
+    }
+
+    function fly(target) {
+        const bee = document.getElementById('bee');
+        const tx = parseInt(target.style.left), ty = parseInt(target.style.top);
+        bee.style.transform = (tx < lastX) ? "scaleX(-1)" : "scaleX(1)";
+        lastX = tx;
+        buzz.currentTime = 0; buzz.play().catch(()=>{});
+        bee.style.left = (tx + 5) + "px"; bee.style.top = (ty - 60) + "px";
+
+        setTimeout(() => {
+            target.classList.add('correct');
+            step++;
+            document.getElementById('honey-fill').style.height = (step * 10) + "%";
+            if(step === 10) {
+                setTimeout(() => showReport("БРАВО!", "Ти събра целия мед!"), 800);
+            } else updateTask();
+        }, 1400);
+    }
+
+    function updateTask() { document.getElementById('task-box').innerText = tasks[step].q; }
+
+    function showReport(t, b) {
+        document.getElementById('rep-title').innerText = t;
+        document.getElementById('rep-body').innerText = b;
+        document.getElementById('report-overlay').style.display = 'flex';
+    }
+</script>
+</body>
+</html>
